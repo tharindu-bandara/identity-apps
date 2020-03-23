@@ -22,6 +22,7 @@ import { AppLayout, AuthLayout, DashboardLayout, DefaultPageLayout, ErrorPageLay
 import {
     ApplicationEditPage,
     ApplicationsPage,
+
     ApplicationTemplateSelectPage,
     HomePage,
     IdentityProvidersPage,

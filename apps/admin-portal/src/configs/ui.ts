@@ -187,6 +187,12 @@ export const ApplicationWizardStepIcons = {
     summary: ReportIcon
 };
 
+export const IdentityProviderWizardStepIcons = {
+    general: DocumentIcon,
+    federatedAuthenticatorConfig: GearsIcon,
+    summary: ReportIcon
+};
+
 export const AuthenticatorIcons = {
     basic: BasicAuthIcon,
     emailOTP: EmailOTPIcon,
