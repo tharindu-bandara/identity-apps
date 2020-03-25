@@ -32,7 +32,7 @@ import {
     FederatedAuthenticatorMetaInterface,
     IdentityProviderTemplateListItemInterface,
     MainApplicationInterface,
-    SupportedAuthProtocolTypes,
+    SupportedAuthenticators,
     SupportedQuickStartTemplates
 } from "../../../models";
 
@@ -42,6 +42,8 @@ import {AppState} from "../../../store";
 import {ApplicationConstants} from "../../../constants";
 import {AuthenticatorFormFactory} from "../forms/authenticator-form-factory";
 import {IdentityProviderWizardStepIcons} from "../../../configs";
+import {IdentityProviderManagementUtils} from "../../../utils/identity-provider-management-utils";
+import {AuthenticatorsMeta} from "../meta/authenticators.meta";
 
 /**
  * Proptypes for the identity provider creation wizard component.
@@ -77,9 +79,9 @@ interface WizardStepInterface {
  * @readonly
  * @enum {string}
  */
-enum WizardStepsFormTypes {
+enum IdentityProviderCreateWizardStepTypes {
     GENERAL_SETTINGS = "generalSettings",
-    FEDERATED_AUTHENTICATOR_SETTINGS = "federatedAuthenticatorSettings",
+    AUTHENTICATOR_SETTINGS = "federatedAuthenticatorSettings",
     SUMMARY = "summary"
 }
 
@@ -110,10 +112,10 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
 
     const dispatch = useDispatch();
 
-    const availableInboundProtocols = useSelector((state: AppState) => state.application.meta.inboundProtocols);
+    const availableAuthenticators = useSelector((state: AppState) => state.identityProvider.meta.authenticators);
 
     const [ submitGeneralSettings, setSubmitGeneralSettings ] = useTrigger();
-    const [ submitOAuth, setSubmitOauth ] = useTrigger();
+    const [ submitAuthenticator, setSubmitAuthenticator ] = useTrigger();
     const [ finishSubmit, setFinishSubmit ] = useTrigger();
     const [ triggerProtocolSelectionSubmit, setTriggerProtocolSelectionSubmit ] = useState<boolean>(false);
 
@@ -177,15 +179,12 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
 
         switch (step) {
             case 0:
-                setTriggerProtocolSelectionSubmit(true);
-                break;
-            case 1:
                 setSubmitGeneralSettings();
                 break;
-            case 2:
-                setSubmitOauth();
+            case 1:
+                setSubmitAuthenticator();
                 break;
-            case 3:
+            case 2:
                 setFinishSubmit();
                 break;
             default:
@@ -204,9 +203,9 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
      * Handles wizard step submit.
      *
      * @param values - Forms values to be stored in state.
-     * @param {WizardStepsFormTypes} formType - Type of the form.
+     * @param {IdentityProviderCreateWizardStepTypes} formType - Type of the form.
      */
-    const handleWizardFormSubmit = (values: any, formType: WizardStepsFormTypes): void => {
+    const handleWizardFormSubmit = (values: any, formType: IdentityProviderCreateWizardStepTypes): void => {
         setCurrentWizardStep(currentWizardStep + 1);
         setWizardState(_.merge(wizardState, {[formType]: values}));
 
@@ -226,7 +225,7 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
         let summary = {};
 
         for (const [ key, value ] of Object.entries(wizardState)) {
-            if (key === WizardStepsFormTypes.FEDERATED_AUTHENTICATOR_SETTINGS) {
+            if (key === IdentityProviderCreateWizardStepTypes.AUTHENTICATOR_SETTINGS) {
                 continue;
             }
 
@@ -253,17 +252,17 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
         //
         // createNewApplication(application);
     };
-
-    /**
-     * Resolves the set of selectable inbound protocols.
-     *
-     * @return {AuthProtocolMetaListItemInterface[]} List of selectable inbound protocols.
-     */
-    const resolveSelectableInboundProtocols = (): AuthProtocolMetaListItemInterface[] => {
-        return availableInboundProtocols.filter((protocol) => {
-            // return template.protocols.includes(protocol.id as SupportedAuthProtocolTypes);
-        })
-    };
+    //
+    // /**
+    //  * Resolves the set of selectable inbound protocols.
+    //  *
+    //  * @return {AuthProtocolMetaListItemInterface[]} List of selectable inbound protocols.
+    //  */
+    // const resolveSelectableInboundProtocols = (): AuthProtocolMetaListItemInterface[] => {
+    //     return availableAuthenticators.filter((protocol) => {
+    //         // return template.protocols.includes(protocol.id as SupportedAuthProtocolTypes);
+    //     })
+    // };
 
     /**
      * Called when modal close event is triggered.
@@ -281,7 +280,7 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
     });
 
     const [ authenticatorMeta, setAuthenticatorMeta ] = useState<FederatedAuthenticatorMetaInterface>({
-        name: "",
+        name: SupportedAuthenticators.NONE,
         displayName: "",
         authenticatorId: "",
         properties: []
@@ -308,22 +307,22 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
                 return (
                     <GeneralSettingsWizardForm
                         triggerSubmit={ submitGeneralSettings }
-                        initialValues={ wizardState && wizardState[ WizardStepsFormTypes.GENERAL_SETTINGS ] }
+                        initialValues={ wizardState && wizardState[
+                            IdentityProviderCreateWizardStepTypes.GENERAL_SETTINGS ] }
                         onSubmit={ (values): void => handleWizardFormSubmit(values,
-                            WizardStepsFormTypes.GENERAL_SETTINGS) }
+                            IdentityProviderCreateWizardStepTypes.GENERAL_SETTINGS) }
                     />
                 );
             case 1:
-                if (wizardState && wizardState[ WizardStepsFormTypes.FEDERATED_AUTHENTICATOR_SETTINGS ]) {
-                    if (wizardState[WizardStepsFormTypes.FEDERATED_AUTHENTICATOR_SETTINGS].id ===
+                if (wizardState && wizardState[ IdentityProviderCreateWizardStepTypes.AUTHENTICATOR_SETTINGS ]) {
+                    if (wizardState[IdentityProviderCreateWizardStepTypes.AUTHENTICATOR_SETTINGS].id ===
                         SupportedQuickStartTemplates.GOOGLE) {
                         return (
                             <AuthenticatorFormFactory
                                 metadata={ authenticatorMeta }
-                                initialValues={ authenticatorDetails
-                                }
+                                initialValues={ authenticatorDetails }
                                 onSubmit={ handleFederatedAuthenticatorConfigs }
-                                type={ SupportedAuthProtocolTypes.OIDC }
+                                type={ SupportedAuthenticators.GOOGLE }
                             />
                             // <GoogleTemplateSettingsWizardForm
                             //     triggerSubmit={ submitOAuth }
@@ -350,12 +349,12 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
 
     const STEPS: WizardStepInterface[] = [
         {
-            icon: IdentityProviderWizardStepIcons.federatedAuthenticatorConfig,
-            title: "Federated authenticator configs"
-        },
-        {
             icon: IdentityProviderWizardStepIcons.general,
             title: "General settings"
+        },
+        {
+            icon: IdentityProviderWizardStepIcons.authenticatorConfig,
+            title: "Authenticator"
         },
         {
             icon: IdentityProviderWizardStepIcons.summary,
@@ -364,32 +363,30 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
     ];
 
     /**
-     * Loads the application template settings on initial component load.
+     * Loads the identity provider authenticators on initial component load.
      */
     useEffect(() => {
-        // if (!_.isEmpty(availableInboundProtocols)) {
-        //     return;
-        // }
-        //
-        // ApplicationManagementUtils.getInboundProtocols(InboundProtocolsMeta, false);
-        setWizardSteps(STEPS);
+        if (!_.isEmpty(availableAuthenticators)) {
+            return;
+        }
+        IdentityProviderManagementUtils.getAuthenticators(AuthenticatorsMeta);
     }, []);
 
     /**
-     * Called when `availableInboundProtocols` are changed.
+     * Called when `availableAuthenticators` are changed.
      */
     useEffect(() => {
-        // if (!(template.protocols instanceof Array)) {
-        //     throw new Error("Protocols has to be in the form of an array.")
-        // }
-        //
+        if (!(template.authenticators instanceof Array)) {
+            throw new Error("Protocols has to be in the form of an array.")
+        }
+
         // // Set the default selected protocol to the first.
         // setWizardState(_.merge(wizardState,
         //     {
-        //         [ WizardStepsFormTypes.PROTOCOL_SELECTION ]: [ ...availableInboundProtocols ]
+        //         [ WizardStepsFormTypes.PROTOCOL_SELECTION ]: [ ...availableAuthenticators ]
         //             .find((protocol) => protocol.id === template.protocols[ 0 ])
         //     }));
-        //
+
         // // If there is only one supported protocol for the template, set is as selected
         // // and skip the protocol selection step.
         // if (template.protocols instanceof Array && template.protocols.length === 1) {
@@ -402,8 +399,8 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
         //     return;
         // }
 
-        // setWizardSteps(STEPS);
-    }, [ availableInboundProtocols ]);
+        setWizardSteps(STEPS);
+    }, [ availableAuthenticators ]);
 
     /**
      * Sets the current wizard step to the previous on every `partiallyCompletedStep`
@@ -418,68 +415,68 @@ export const IdentityProviderCreateWizard: FunctionComponent<IdentityProviderCre
         setPartiallyCompletedStep(undefined);
     }, [ partiallyCompletedStep ]);
 
-    /**
-     * Called when protocol selection form trigger value is changed.
-     */
-    useEffect(() => {
-        if (triggerProtocolSelectionSubmit) {
-            setTriggerProtocolSelectionSubmit(!triggerProtocolSelectionSubmit);
-        }
-    }, [ triggerProtocolSelectionSubmit ]);
+    // /**
+    //  * Called when protocol selection form trigger value is changed.
+    //  */
+    // useEffect(() => {
+    //     if (triggerProtocolSelectionSubmit) {
+    //         setTriggerProtocolSelectionSubmit(!triggerProtocolSelectionSubmit);
+    //     }
+    // }, [ triggerProtocolSelectionSubmit ]);
 
     return (
         (
-               wizardSteps ? <Modal
-                    open={ true }
-                    className="wizard identity-provider-create-wizard"
-                    dimmer="blurring"
-                    onClose={ handleWizardClose }
-                    closeOnDimmerClick
-                    closeOnEscape
-                >
-                    <Modal.Header className="wizard-header">
-                        { title }
-                        { subTitle && <Heading as="h6">{ subTitle }</Heading> }
-                    </Modal.Header>
-                    <Modal.Content className="steps-container">
-                        <Steps.Group header="Fill the basic information about your identity provider."
-                                     current={ currentWizardStep }>
-                            { wizardSteps.map((step, index) => (
-                                <Steps.Step
-                                    key={ index }
-                                    icon={ step.icon }
-                                    title={ step.title }
-                                />
-                            )) }
-                        </Steps.Group>
-                    </Modal.Content>
-                    <Modal.Content className="content-container" scrolling>{ resolveStepContent() }</Modal.Content>
-                    <Modal.Actions>
-                        <Grid>
-                            <Grid.Row column={ 1 }>
-                                <Grid.Column mobile={ 8 } tablet={ 8 } computer={ 8 }>
-                                    <LinkButton floated="left" onClick={ handleWizardClose }>Cancel</LinkButton>
-                                </Grid.Column>
-                                <Grid.Column mobile={ 8 } tablet={ 8 } computer={ 8 }>
-                                    { currentWizardStep < wizardSteps.length - 1 && (
-                                        <PrimaryButton floated="right" onClick={ navigateToNext }>
-                                            Next Step <Icon name="arrow right"/>
-                                        </PrimaryButton>
-                                    ) }
-                                    { currentWizardStep === wizardSteps.length - 1 && (
-                                        <PrimaryButton floated="right" onClick={ navigateToNext }>Finish</PrimaryButton>
-                                    ) }
-                                    { currentWizardStep > 0 && (
-                                        <LinkButton floated="right" onClick={ navigateToPrevious }>
-                                            <Icon name="arrow left"/> Previous step
-                                        </LinkButton>
-                                    ) }
-                                </Grid.Column>
-                            </Grid.Row>
-                        </Grid>
-                    </Modal.Actions>
-                </Modal> : null
-            )
+            wizardSteps ? <Modal
+                open={ true }
+                className="wizard identity-provider-create-wizard"
+                dimmer="blurring"
+                onClose={ handleWizardClose }
+                closeOnDimmerClick
+                closeOnEscape
+            >
+                <Modal.Header className="wizard-header">
+                    {title}
+                    {subTitle && <Heading as="h6">{subTitle}</Heading>}
+                </Modal.Header>
+                <Modal.Content className="steps-container">
+                    <Steps.Group header="Fill the basic information about your identity provider."
+                                 current={ currentWizardStep }>
+                        {wizardSteps.map((step, index) => (
+                            <Steps.Step
+                                key={ index }
+                                icon={ step.icon }
+                                title={ step.title }
+                            />
+                        ))}
+                    </Steps.Group>
+                </Modal.Content>
+                <Modal.Content className="content-container" scrolling>{resolveStepContent()}</Modal.Content>
+                <Modal.Actions>
+                    <Grid>
+                        <Grid.Row column={ 1 }>
+                            <Grid.Column mobile={ 8 } tablet={ 8 } computer={ 8 }>
+                                <LinkButton floated="left" onClick={ handleWizardClose }>Cancel</LinkButton>
+                            </Grid.Column>
+                            <Grid.Column mobile={ 8 } tablet={ 8 } computer={ 8 }>
+                                {currentWizardStep < wizardSteps.length - 1 && (
+                                    <PrimaryButton floated="right" onClick={ navigateToNext }>
+                                        Next Step <Icon name="arrow right"/>
+                                    </PrimaryButton>
+                                )}
+                                {currentWizardStep === wizardSteps.length - 1 && (
+                                    <PrimaryButton floated="right" onClick={ navigateToNext }>Finish</PrimaryButton>
+                                )}
+                                {currentWizardStep > 0 && (
+                                    <LinkButton floated="right" onClick={ navigateToPrevious }>
+                                        <Icon name="arrow left"/> Previous step
+                                    </LinkButton>
+                                )}
+                            </Grid.Column>
+                        </Grid.Row>
+                    </Grid>
+                </Modal.Actions>
+            </Modal> : null
+        )
     );
 };
 

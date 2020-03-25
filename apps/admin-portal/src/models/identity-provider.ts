@@ -16,6 +16,8 @@
  * under the License.
  */
 
+import {AuthProtocolMetaListItemInterface} from "./application-inbound";
+
 /**
  * Available Identity Provider list.
  */
@@ -108,7 +110,7 @@ export interface FederatedAuthenticatorMetaPropertyInterface {
 
 export interface FederatedAuthenticatorMetaInterface {
     authenticatorId?: string;
-    name?: string;
+    name?: SupportedAuthenticators;
     displayName?: string;
     properties?: FederatedAuthenticatorMetaPropertyInterface[];
 }
@@ -143,7 +145,7 @@ export interface IdentityProviderTemplateListItemInterface {
     id: SupportedQuickStartTemplates;
     /* eslint-disable @typescript-eslint/no-explicit-any */
     image: any;
-    authenticators: SupportedAuthenticators;
+    authenticators: SupportedAuthenticators[];
     provisioningConnectors: SupportedProvisioningConnectors;
     services: SupportedServicesInterface[];
 }
@@ -170,7 +172,8 @@ export enum SupportedAuthenticators {
     NONE ="none",
     FACEBOOK = "facebook",
     GOOGLE = "google",
-    TWITTER = "twitter"
+    TWITTER = "twitter",
+    OIDC = "oidc"
 }
 
 /**
@@ -218,3 +221,17 @@ export const emptyIdentityProvider = (): IdentityProviderListItemInterface => ({
     isEnabled: false,
     name: ""
 });
+
+/**
+ * Interface for the identity provider reducer state.
+ */
+export interface IdentityProviderReducerStateInterface {
+    meta: IdentityProviderMetaInterface;
+}
+
+/**
+ * Interface for the identity provider meta for the redux store.
+ */
+interface IdentityProviderMetaInterface {
+    authenticators: FederatedAuthenticatorMetaInterface[];
+}

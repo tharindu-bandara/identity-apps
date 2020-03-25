@@ -189,7 +189,7 @@ export const ApplicationWizardStepIcons = {
 
 export const IdentityProviderWizardStepIcons = {
     general: DocumentIcon,
-    federatedAuthenticatorConfig: GearsIcon,
+    authenticatorConfig: GearsIcon,
     summary: ReportIcon
 };
 

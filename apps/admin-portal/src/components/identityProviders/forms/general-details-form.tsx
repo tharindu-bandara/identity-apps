@@ -50,6 +50,14 @@ interface GeneralDetailsFormPopsInterface {
      * On submit callback.
      */
     onSubmit: (values: any) => void;
+    /**
+     * Externally trigger form submission.
+     */
+    triggerSubmit?: boolean;
+    /**
+     * Enable submission button.
+     */
+    enableSubmitButton?: boolean;
 }
 
 /**
@@ -65,7 +73,9 @@ export const GeneralDetailsForm: FunctionComponent<GeneralDetailsFormPopsInterfa
         description,
         isEnabled,
         imageUrl,
-        onSubmit
+        onSubmit,
+        triggerSubmit,
+        enableSubmitButton
     } = props;
 
     const [ isEnable, setIsEnable ] = useState<boolean>(isEnabled);
@@ -91,6 +101,7 @@ export const GeneralDetailsForm: FunctionComponent<GeneralDetailsFormPopsInterfa
             onSubmit={ (values): void => {
                 onSubmit(updateConfigurations(values))
             } }
+            submitState={ triggerSubmit }
         >
             <Grid>
                 <Grid.Row columns={ 1 }>
@@ -155,14 +166,22 @@ export const GeneralDetailsForm: FunctionComponent<GeneralDetailsFormPopsInterfa
                         />
                     </Grid.Column>
                 </Grid.Row>
-                <Grid.Row columns={ 1 }>
-                    <Grid.Column mobile={ 16 } tablet={ 16 } computer={ 8 }>
-                        <Button primary type="submit" size="small" className="form-button">
-                            Update
-                        </Button>
-                    </Grid.Column>
-                </Grid.Row>
+                {enableSubmitButton ?
+                    (
+                        <Grid.Row columns={ 1 }>
+                            <Grid.Column mobile={ 16 } tablet={ 16 } computer={ 8 }>
+                                <Button primary type="submit" size="small" className="form-button">
+                                    Update
+                                </Button>
+                            </Grid.Column>
+                        </Grid.Row>
+                    ) : null}
             </Grid>
         </Forms>
     );
+};
+
+GeneralDetailsForm.defaultProps = {
+    triggerSubmit: false,
+    enableSubmitButton: true
 };

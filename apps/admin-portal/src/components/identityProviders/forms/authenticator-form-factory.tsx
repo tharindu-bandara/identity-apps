@@ -17,8 +17,9 @@
  */
 
 import React, {FunctionComponent, ReactElement} from "react";
-import { SupportedAuthProtocolTypes } from "../../../models";
+import {SupportedAuthenticators, SupportedAuthProtocolTypes} from "../../../models";
 import { OIDCAuthenticatorForm } from "./oidc-authenticator-form";
+import {GoogleAuthenticatorForm} from "./google-authenticator-form";
 
 /**
  * Proptypes for the inbound form factory component.
@@ -27,7 +28,7 @@ interface AuthenticatorFormFactoryInterface {
     metadata: any;
     initialValues: any;
     onSubmit: (values: any) => void;
-    type: SupportedAuthProtocolTypes;
+    type: SupportedAuthenticators;
 }
 
 /**
@@ -48,8 +49,12 @@ export const AuthenticatorFormFactory: FunctionComponent<AuthenticatorFormFactor
     } = props;
 
     switch (type) {
-        case SupportedAuthProtocolTypes.OIDC:
-            return <OIDCAuthenticatorForm initialValues={ initialValues } metadata={ metadata } onSubmit={ onSubmit } />;
+        case SupportedAuthenticators.OIDC:
+            return <OIDCAuthenticatorForm initialValues={ initialValues } metadata={ metadata }
+                                          onSubmit={ onSubmit }/>;
+        case SupportedAuthenticators.GOOGLE:
+            return <GoogleAuthenticatorForm initialValues={ initialValues } metadata={ metadata }
+                                          onSubmit={ onSubmit }/>;
         default:
             return null;
     }

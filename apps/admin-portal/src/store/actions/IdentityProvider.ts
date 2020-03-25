@@ -16,20 +16,18 @@
  * under the License.
  */
 
-import {combineReducers} from "redux";
-import {applicationReducer, authenticateReducer, globalReducer} from "./reducers";
-import {LoadersReducer} from "./reducers/loaders";
-import {identityProviderReducer} from "./reducers/identityProvider";
+import {FederatedAuthenticatorMetaInterface} from "../../models";
+import {IdentityProviderActionTypes, SetAvailableAuthenticatorsMetaInterface} from "./types/identityProvider";
 
 /**
- * Combines all the reducers.
+ * Redux action to set the list of available authenticators.
  *
- * @type {Reducer<any>} Root reducer to be used when creating the store.
+ * @param {FederatedAuthenticatorMetaInterface} meta - Inbound auth protocol meta.
+ * @return {SetAvailableAuthenticatorsMetaInterface} An action of type `SET_AVAILABLE_AUTHENTICATOR_META`
  */
-export const reducers = combineReducers({
-    identityProvider: identityProviderReducer,
-    application: applicationReducer,
-    authenticationInformation: authenticateReducer,
-    global: globalReducer,
-    loaders: LoadersReducer
+export const setAvailableAuthenticatorsMeta = (
+    meta: FederatedAuthenticatorMetaInterface[]
+): SetAvailableAuthenticatorsMetaInterface => ({
+    payload: meta,
+    type: IdentityProviderActionTypes.SET_AVAILABLE_AUTHENTICATOR_META
 });

@@ -49,7 +49,7 @@ export const IdentityProviderTemplateSelectPage: FunctionComponent<{}> = (): Rea
             displayName: "Facebook",
             id: SupportedQuickStartTemplates.FACEBOOK,
             image: IdPIcons?.facebook,
-            authenticators: SupportedAuthenticators.FACEBOOK,
+            authenticators: [SupportedAuthenticators.FACEBOOK],
             provisioningConnectors: SupportedProvisioningConnectors.NONE,
             services: [
                 {
@@ -64,7 +64,7 @@ export const IdentityProviderTemplateSelectPage: FunctionComponent<{}> = (): Rea
             displayName: "Google",
             id: SupportedQuickStartTemplates.GOOGLE,
             image: IdPIcons?.google,
-            authenticators: SupportedAuthenticators.GOOGLE,
+            authenticators: [SupportedAuthenticators.GOOGLE],
             provisioningConnectors: SupportedProvisioningConnectors.GOOGLE,
             services: [
                 {
@@ -84,7 +84,7 @@ export const IdentityProviderTemplateSelectPage: FunctionComponent<{}> = (): Rea
             displayName: "Twitter",
             id: SupportedQuickStartTemplates.TWITTER,
             image: IdPIcons?.twitter,
-            authenticators: SupportedAuthenticators.TWITTER,
+            authenticators: [SupportedAuthenticators.TWITTER],
             provisioningConnectors: SupportedProvisioningConnectors.NONE,
             services: [
                 {
